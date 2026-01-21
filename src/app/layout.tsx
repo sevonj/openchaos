@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { Cat } from "@/components/Cat";
 import "./globals.css";
-import "./retro.css";
+import { Clippy } from "@/components/Clippy";
 import { Fartscroll } from "@/components/Fartscroll";
 
 const chaoticEmojis = [
@@ -32,8 +33,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
-        <Fartscroll />
+        <div className="container">
+          {children}
+          <Cat />
+          <Clippy />
+          <Fartscroll />
+        </div>
       </body>
     </html>
   );

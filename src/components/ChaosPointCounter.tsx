@@ -1,4 +1,5 @@
 "use client";
+import "../app/chaos_points.css";
 
 export function ChaosPointCounter({ pts }: { pts: number }) {
 

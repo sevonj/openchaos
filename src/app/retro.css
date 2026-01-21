@@ -1724,3 +1724,30 @@
   border-right: none;
   box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #ffffff;
 }
+
+.chaos-point-counter {
+  position: absolute;
+  bottom: 80px;
+  right: 80px;
+  width: 180px;
+  height: 100px;
+
+  p {
+    text-align: end;
+    font-family: monospace;
+    font-weight: bolder;
+    font-size: larger;
+    font-style: italic;
+    background: linear-gradient(to bottom,  #aebcbf 0%,#6e7774 50%,#0a0e0a 51%,#0a0809 100%);
+    color: #fff;
+    filter: drop-shadow(0 10px 20px #000);
+    mask-image: linear-gradient(to left, #000 25%, transparent );
+    text-shadow: 0 0 4px #000;
+    padding-right: 4px;
+    border-radius: 4px;
+  }
+
+  img {
+    filter: drop-shadow(0 10px 20px #000);
+  }
+}

@@ -1738,12 +1738,22 @@
     font-weight: bolder;
     font-size: larger;
     font-style: italic;
-    background: linear-gradient(to bottom,  #aebcbf 0%,#6e7774 50%,#0a0e0a 51%,#0a0809 100%);
+    white-space: nowrap;
+    padding-right: 8px;
     color: #fff;
-    filter: drop-shadow(0 10px 20px #000);
-    mask-image: linear-gradient(to left, #000 25%, transparent );
     text-shadow: 0 0 4px #000;
-    padding-right: 4px;
+    filter: drop-shadow(0 10px 20px #000);
+  }
+
+  p::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+
+    background: linear-gradient(to bottom,  #aebcbf 0%,#6e7774 50%,#0a0e0a 51%,#0a0809 100%);
+    mask-image: linear-gradient(to left, #000 25%, transparent );
     border-radius: 4px;
   }
 

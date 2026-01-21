@@ -18,7 +18,7 @@ export function PRCard({ pr, rank }: PRCardProps) {
         <tr>
           <td className={rank === 1 ? 'pr-card-number-cell-leading' : 'pr-card-number-cell-normal'}>
             <span className={rank === 1 ? 'pr-card-number-text-leading' : 'pr-card-number-text-normal'}>
-              <b>#{pr.number}</b>
+              <b>{rank}</b>
             </span>
             {rank === 1 && (
               <div className="pr-card-leading-badge">
@@ -34,7 +34,7 @@ export function PRCard({ pr, rank }: PRCardProps) {
                 <tr>
                   <td>
                     <span className="pr-card-title">
-                      <b>{pr.title}</b>
+                      <b>#{pr.number} {pr.title}</b>
                     </span>
                   </td>
                 </tr>

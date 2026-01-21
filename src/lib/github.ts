@@ -2,6 +2,7 @@ import { Console } from "console";
 
 export interface PullRequest {
   number: number;
+  state: string;
   title: string;
   author: string;
   url: string;
@@ -13,6 +14,7 @@ export interface PullRequest {
 
 interface GitHubPR {
   number: number;
+  state: string;
   title: string;
   html_url: string;
   user: {
@@ -46,7 +48,7 @@ function getHeaders(accept: string): Record<string, string> {
   return headers;
 }
 
-export async function getOpenPRs(): Promise<PullRequest[]> {
+export async function getAllPRs(): Promise<PullRequest[]> {
   const [owner, repo] = GITHUB_REPO.split("/");
 
   let allPRs: GitHubPR[] = [];
@@ -54,7 +56,7 @@ export async function getOpenPRs(): Promise<PullRequest[]> {
 
   while (true) {
     const response = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/pulls?state=open&per_page=100&page=${page}`,
+      `https://api.github.com/repos/${owner}/${repo}/pulls?state=all&per_page=100&page=${page}`,
       {
         headers: getHeaders("application/vnd.github.v3+json"),
         next: { revalidate: 300 }, // Cache for 5 minutes
@@ -94,6 +96,7 @@ export async function getOpenPRs(): Promise<PullRequest[]> {
 
       return {
         number: pr.number,
+        state: pr.state,
         title: pr.title,
         author: pr.user.login,
         url: pr.html_url,

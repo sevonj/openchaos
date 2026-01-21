@@ -1,4 +1,4 @@
-import { getOpenPRs } from "@/lib/github";
+import { getAllPRs } from "@/lib/github";
 import { PRCard } from "./PRCard";
 import { ChaosPointCounter } from "./ChaosPointCounter";
 
@@ -8,7 +8,7 @@ export async function PRList() {
   let total_votes = 0;
 
   try {
-    prs = await getOpenPRs();
+    prs = await getAllPRs();
     total_votes = prs.reduce((sum, pr) => sum + pr.votes, 0);
   } catch (e) {
     error = e instanceof Error ? e.message : "Failed to fetch PRs";
@@ -38,7 +38,7 @@ export async function PRList() {
 
   return (
     <div className="w-full max-w-xl space-y-3">
-      {prs.map((pr, index) => (
+      {prs.filter(pr => pr.state === "open").map((pr, index) => (
         <PRCard key={pr.number} pr={pr} rank={index + 1} />
       ))}
       <ChaosPointCounter pts={total_votes} />

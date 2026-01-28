@@ -7,7 +7,7 @@ interface PRCardProps {
 }
 
 export function PRCard({ pr, rank }: PRCardProps) {
-  const isSixtySeven = pr.votes === 67 || pr.votes === -67;
+  const isSexNumber = pr.votes === 69 || pr.votes === -69;
   return (
     <table
       width="100%"
@@ -15,7 +15,7 @@ export function PRCard({ pr, rank }: PRCardProps) {
       cellPadding={8}
       cellSpacing={0}
       className={`pr-card ${rank === 1 ? 'pr-card-leading' : 'pr-card-normal'}
-        ${isSixtySeven ? "sixseven-shake" : ""}
+        ${isSexNumber ? "sixtynine-shake" : ""}
       `}
     >
       <tbody>

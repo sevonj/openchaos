@@ -12,6 +12,14 @@ export interface PullRequest {
   checksPassed: boolean;
 }
 
+export interface MergedPullRequest {
+  number: number;
+  title: string;
+  author: string;
+  url: string;
+  mergedAt: string;
+}
+
 interface GitHubPR {
   number: number;
   state: string;
@@ -34,8 +42,12 @@ interface GitHubPRDetail {
   mergeable: boolean | null;
 }
 
-interface GitHubCommitStatus {
-  state: "failure" | "pending" | "success" | "error";
+interface GitHubCheckRunsResponse {
+  total_count: number;
+  check_runs: {
+    status: string;
+    conclusion: string | null;
+  }[];
 }
 
 const GITHUB_REPO = "skridlevsky/openchaos";
@@ -108,11 +120,19 @@ export async function getAllPRs(): Promise<PullRequest[]> {
     }),
   );
 
-  // Sort by votes descending
-  return prsWithVotes.sort((a, b) =>
-    (b.votes - a.votes) ||
-    (new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-  );
+  // Sort: mergeable PRs first, then by votes descending, ties by newest
+  return prsWithVotes.sort((a, b) => {
+    // PRs with conflicts go to the bottom (they can't win anyway)
+    if (a.isMergeable !== b.isMergeable) {
+      return a.isMergeable ? -1 : 1;
+    }
+    // Within same mergeability, sort by votes
+    if (b.votes !== a.votes) {
+      return b.votes - a.votes;
+    }
+    // Ties broken by newest
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 }
 
 async function getPRVotes(owner: string, repo: string, prNumber: number): Promise<number> {
@@ -159,19 +179,23 @@ async function getPRMergeStatus(
   const response = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`,
     {
-      headers: {
-        Accept: "application/vnd.github.v3+json",
-      },
+      headers: getHeaders("application/vnd.github.v3+json"),
       next: { revalidate: 300 },
     }
   );
 
   if (!response.ok) {
-    return false;
+    // Rate limited or other error — assume mergeable rather than showing
+    // false conflicts. The next ISR cycle will get the real value.
+    return true;
   }
 
   const data: GitHubPRDetail = await response.json();
-  return data.mergeable ?? false;
+
+  // GitHub computes mergeability lazily — null means "not yet computed", not
+  // "has conflicts". Default to true and let the next ISR cycle pick up the
+  // real value.
+  return data.mergeable ?? true;
 }
 
 async function getCommitStatus(
@@ -180,19 +204,73 @@ async function getCommitStatus(
   sha: string
 ): Promise<boolean> {
   const response = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/commits/${sha}/status`,
+    `https://api.github.com/repos/${owner}/${repo}/commits/${sha}/check-runs`,
     {
-      headers: {
-        Accept: "application/vnd.github.v3+json",
-      },
+      headers: getHeaders("application/vnd.github.v3+json"),
       next: { revalidate: 300 },
     }
   );
 
   if (!response.ok) {
-    return false;
+    // Rate limited or other error — assume checks pass rather than showing
+    // false failures. The next ISR cycle will get the real value.
+    return true;
   }
 
-  const data: GitHubCommitStatus = await response.json();
-  return data.state === "success";
+  const data: GitHubCheckRunsResponse = await response.json();
+
+  // No check runs means nothing to fail
+  if (data.total_count === 0) {
+    return true;
+  }
+
+  // All check runs must be completed and successful
+  return data.check_runs.every(
+    (run) => run.status === "completed" && run.conclusion === "success"
+  );
+}
+
+interface GitHubMergedPR {
+  number: number;
+  title: string;
+  html_url: string;
+  user: {
+    login: string;
+  };
+  merged_at: string | null;
+}
+
+export async function getMergedPRs(): Promise<MergedPullRequest[]> {
+  const [owner, repo] = GITHUB_REPO.split("/");
+
+  const response = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/pulls?state=closed&sort=updated&direction=desc&per_page=20`,
+    {
+      headers: getHeaders("application/vnd.github.v3+json"),
+      next: { revalidate: 300 },
+    }
+  );
+
+  if (!response.ok) {
+    if (response.status === 403) {
+      throw new Error("Rate limited by GitHub API");
+    }
+    throw new Error(`GitHub API error: ${response.status}`);
+  }
+
+  const prs: GitHubMergedPR[] = await response.json();
+
+  // Filter to only merged PRs (not just closed), exclude repo owner's maintenance PRs
+  // Sort by merge time (newest first) since sort=updated may not reflect merge order
+  const REPO_OWNER = owner;
+  return prs
+    .filter((pr) => pr.merged_at !== null && pr.user.login !== REPO_OWNER)
+    .sort((a, b) => new Date(b.merged_at!).getTime() - new Date(a.merged_at!).getTime())
+    .map((pr) => ({
+      number: pr.number,
+      title: pr.title,
+      author: pr.user.login,
+      url: pr.html_url,
+      mergedAt: pr.merged_at!,
+    }));
 }

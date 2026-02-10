@@ -8,7 +8,7 @@ import { soundPlayer } from "@/utils/sounds";
 
 interface PRCardProps {
   pr: PullRequest;
-  rank: number;
+  distinguishLeading?: boolean,
 }
 
 function chooseURL(url: string) {
@@ -23,10 +23,11 @@ function chooseURL(url: string) {
 
 type VoteStatus = 'idle' | 'voting' | 'success' | 'error';
 
-export function PRCard({ pr, rank }: PRCardProps) {
+export function PRCard({ pr, distinguishLeading = true }: PRCardProps) {
   const { user, isAuthenticated, login } = useAuth();
   const url = chooseURL(pr.url);
   const isSixtySeven = pr.votes === 67 || pr.votes === -67;
+  const isLeading = pr.rank === 1 && distinguishLeading;
 
   const [voteStatus, setVoteStatus] = useState<VoteStatus>('idle');
   const [optimisticVotes, setOptimisticVotes] = useState(pr.votes);
@@ -180,7 +181,7 @@ export function PRCard({ pr, rank }: PRCardProps) {
   const hasConflict = !pr.isMergeable;
   const cardClass = hasConflict
     ? `pr-card pr-card-normal pr-card-conflict ${isSixtySeven ? "sixseven-shake" : ""}`
-    : `pr-card ${rank === 1 ? 'pr-card-leading' : 'pr-card-normal'} ${isSixtySeven ? "sixseven-shake" : ""}`;
+    : `pr-card ${isLeading ? 'pr-card-leading' : 'pr-card-normal'} ${isSixtySeven ? "sixseven-shake" : ""}`;
 
   return (
     <div ref={cardRef} style={{ position: 'relative' }}>
@@ -196,11 +197,11 @@ export function PRCard({ pr, rank }: PRCardProps) {
       >
       <tbody>
         <tr>
-          <td className={rank === 1 ? 'pr-card-number-cell-leading' : 'pr-card-number-cell-normal'}>
-            <span className={rank === 1 ? 'pr-card-number-text-leading' : 'pr-card-number-text-normal'}>
-              <b>{rank}</b>
+          <td className={isLeading ? 'pr-card-number-cell-leading' : 'pr-card-number-cell-normal'}>
+            <span className={isLeading ? 'pr-card-number-text-leading' : 'pr-card-number-text-normal'}>
+              <b>{hasConflict? "N/A" : pr.rank}</b>
             </span>
-            {rank === 1 && (
+            {isLeading && (
               <div className="pr-card-leading-badge">
                 <span className="pr-card-leading-badge-text">
                   <b>LEADING</b>
@@ -215,7 +216,7 @@ export function PRCard({ pr, rank }: PRCardProps) {
               </div>
             )}
           </td>
-          <td className={rank === 1 ? 'pr-card-content-cell-leading' : 'pr-card-content-cell-normal'}>
+          <td className={isLeading ? 'pr-card-content-cell-leading' : 'pr-card-content-cell-normal'}>
             <table width="100%" border={0} cellPadding={0} cellSpacing={0}>
               <tbody>
                 <tr>
@@ -254,7 +255,7 @@ export function PRCard({ pr, rank }: PRCardProps) {
               </tbody>
             </table>
           </td>
-          <td className={rank === 1 ? 'pr-card-votes-cell-leading' : 'pr-card-votes-cell-normal'}>
+          <td className={isLeading ? 'pr-card-votes-cell-leading' : 'pr-card-votes-cell-normal'}>
             <div style={{
               display: 'flex',
               flexDirection: 'column',
@@ -283,7 +284,7 @@ export function PRCard({ pr, rank }: PRCardProps) {
                 onMouseLeave={() => setShowTooltip(false)}
               >
                 <span
-                  className={rank === 1 ? 'vote-count vote-count-leading' : 'vote-count vote-count-normal'}
+                  className={isLeading ? 'vote-count vote-count-leading' : 'vote-count vote-count-normal'}
                   style={{
                     transition: 'all 0.3s ease',
                     display: 'inline-block',
@@ -295,8 +296,8 @@ export function PRCard({ pr, rank }: PRCardProps) {
                     minWidth: '40px',
                     textAlign: 'center',
                     border: '1px solid',
-                    borderColor: rank === 1 ? '#ff0000' : '#0000ff',
-                    background: rank === 1 ? '#ffff99' : '#e6e6ff',
+                    borderColor: isLeading ? '#ff0000' : '#0000ff',
+                    background: isLeading ? '#ffff99' : '#e6e6ff',
                     borderRadius: '3px'
                   }}
                 >

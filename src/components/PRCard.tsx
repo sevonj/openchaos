@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import type { PullRequest } from "@/lib/github";
+import { hasRhymingWords } from "@/lib/rhymes";
 import { TimeAgo } from "./TimeAgo";
 import { useAuth } from "@/hooks/useAuth";
 import { soundPlayer } from "@/utils/sounds";
@@ -28,6 +29,8 @@ export function PRCard({ pr, distinguishLeading = true }: PRCardProps) {
   const url = chooseURL(pr.url);
   const isSixtySeven = pr.votes === 67 || pr.votes === -67;
   const isLeading = pr.rank === 1 && distinguishLeading;
+  const containsRhymes = hasRhymingWords(pr.title);
+  const hasConflict = !pr.isMergeable || !containsRhymes;
 
   const [voteStatus, setVoteStatus] = useState<VoteStatus>('idle');
   const [optimisticVotes, setOptimisticVotes] = useState(pr.votes);
@@ -178,7 +181,6 @@ export function PRCard({ pr, distinguishLeading = true }: PRCardProps) {
     }
   };
 
-  const hasConflict = !pr.isMergeable;
   const cardClass = hasConflict
     ? `pr-card pr-card-normal pr-card-conflict ${isSixtySeven ? "sixseven-shake" : ""}`
     : `pr-card ${isLeading ? 'pr-card-leading' : 'pr-card-normal'} ${isSixtySeven ? "sixseven-shake" : ""}`;
@@ -409,7 +411,7 @@ export function PRCard({ pr, distinguishLeading = true }: PRCardProps) {
                     {!pr.isMergeable && !pr.checksPassed
                       ? "Conflicts & Checks failed"
                       : !pr.isMergeable
-                        ? "Merge conflicts"
+                        ? (containsRhymes ? "Merge conflicts" : "No rhyme or reason")
                         : "Checks failed"}
                   </span>
                   <br />

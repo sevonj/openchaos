@@ -28,7 +28,8 @@ export async function PRList() {
     );
   }
 
-  const { topByVotes, trending, totalVotes } = data!;
+  const { topByVotes, trending, merged, totalVotes } = data!;
+  const chaosPts = totalVotes + (merged.length * 100);
 
   if (topByVotes.length === 0 && trending.length === 0) {
     return (
@@ -50,7 +51,7 @@ export async function PRList() {
     <>
       <ExpandablePRSection title="🏆 TOP 10 BY VOTES 🏆" prs={topByVotes} showRank />
       <ExpandablePRSection title="🔥 TRENDING THIS WEEK 🔥" prs={trending} />
-      <ChaosPointCounter pts={totalVotes} />
+      <ChaosPointCounter pts={chaosPts} />
     </>
   );
 }

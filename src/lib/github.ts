@@ -11,6 +11,7 @@ export interface PullRequest {
   checksPassed: boolean;
   hotScore: number;
   isTrending: boolean;
+  mergedAt: string | null;
 }
 
 interface PRVotes {
@@ -44,6 +45,7 @@ interface GitHubPR {
     login: string;
   };
   created_at: string;
+  merged_at: string | null;
   head: {
     sha: string;
   };
@@ -122,7 +124,6 @@ export async function getAllPRs(): Promise<PullRequest[]> {
       const votes = await getPRReactions(owner, repo, pr.number);
       const isMergeable = await getPRMergeStatus(owner, repo, pr.number) && hasRhymingWords(pr.title);
       const checksPassed = await getCommitStatus(owner, repo, pr.head.sha);
-
       return {
         number: pr.number,
         state: pr.state,
@@ -131,6 +132,7 @@ export async function getAllPRs(): Promise<PullRequest[]> {
         url: pr.html_url,
         votes: votes.total,
         createdAt: pr.created_at,
+        mergedAt: pr.merged_at,
         isMergeable,
         checksPassed,
         hotScore: calculateHotScore(votes),
@@ -164,11 +166,21 @@ export async function getAllPRs(): Promise<PullRequest[]> {
 export async function getOrganizedPRs(): Promise<{
   topByVotes: PullRequest[];
   trending: PullRequest[];
+  merged: MergedPullRequest[];
   totalVotes: number;
 }> {
   const allPRs = await getAllPRs();
   const totalVotes = allPRs.reduce((sum, pr) => sum + pr.votes, 0);
   const openPRs = allPRs.filter(pr => pr.state === "open");
+  const merged = allPRs.filter((pr) => pr.mergedAt !== null)
+    .sort((a, b) => new Date(b.mergedAt!).getTime() - new Date(a.mergedAt!).getTime())
+    .map((pr) => ({
+      number: pr.number,
+      title: pr.title,
+      author: pr.author,
+      url: pr.url,
+      mergedAt: pr.mergedAt!,
+    }));
 
   // Determine which PRs are in top 5 by hot score (these are "trending")
   const top5ByHotScore = [...openPRs]
@@ -211,7 +223,7 @@ export async function getOrganizedPRs(): Promise<{
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
-  return { topByVotes, trending, totalVotes };
+  return { topByVotes, trending, merged, totalVotes, };
 }
 
 async function getPRReactions(owner: string, repo: string, prNumber: number): Promise<PRVotes> {

@@ -164,8 +164,10 @@ export async function getAllPRs(): Promise<PullRequest[]> {
 export async function getOrganizedPRs(): Promise<{
   topByVotes: PullRequest[];
   trending: PullRequest[];
+  totalVotes: number;
 }> {
-  const allPRs = await getOpenPRs();
+  const allPRs = await getAllPRs();
+  const totalVotes = allPRs.reduce((sum, pr) => sum + pr.votes, 0);
 
   // Determine which PRs are in top 5 by hot score (these are "trending")
   const top5ByHotScore = [...allPRs]
@@ -208,7 +210,7 @@ export async function getOrganizedPRs(): Promise<{
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
-  return { topByVotes, trending };
+  return { topByVotes, trending, totalVotes };
 }
 
 async function getPRReactions(owner: string, repo: string, prNumber: number): Promise<PRVotes> {

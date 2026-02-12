@@ -1,24 +1,13 @@
-// <<<<<<< feat-chaos-points
-import { getAllPRs } from "@/lib/github";
-import { PRCard } from "./PRCard";
 import { ChaosPointCounter } from "./ChaosPointCounter";
-// =======
 import { getOrganizedPRs } from "@/lib/github";
 import { ExpandablePRSection } from "./ExpandablePRSection";
-// >>>>>>> main
 
 export async function PRList() {
   let data;
   let error = null;
-  let total_votes = 0;
 
   try {
-// <<<<<<< feat-chaos-points
-    prs = await getAllPRs();
-    total_votes = prs.reduce((sum, pr) => sum + pr.votes, 0);
-// =======
     data = await getOrganizedPRs();
-// >>>>>>> main
   } catch (e) {
     error = e instanceof Error ? e.message : "Failed to fetch PRs";
   }
@@ -39,7 +28,7 @@ export async function PRList() {
     );
   }
 
-  const { topByVotes, trending } = data!;
+  const { topByVotes, trending, totalVotes } = data!;
 
   if (topByVotes.length === 0 && trending.length === 0) {
     return (
@@ -61,7 +50,7 @@ export async function PRList() {
     <>
       <ExpandablePRSection title="🏆 TOP 10 BY VOTES 🏆" prs={topByVotes} showRank />
       <ExpandablePRSection title="🔥 TRENDING THIS WEEK 🔥" prs={trending} />
-      <ChaosPointCounter pts={total_votes} />
+      <ChaosPointCounter pts={totalVotes} />
     </>
   );
 }

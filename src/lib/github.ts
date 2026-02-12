@@ -168,15 +168,16 @@ export async function getOrganizedPRs(): Promise<{
 }> {
   const allPRs = await getAllPRs();
   const totalVotes = allPRs.reduce((sum, pr) => sum + pr.votes, 0);
+  const openPRs = allPRs.filter(pr => pr.state === "open");
 
   // Determine which PRs are in top 5 by hot score (these are "trending")
-  const top5ByHotScore = [...allPRs]
+  const top5ByHotScore = [...openPRs]
     .sort((a, b) => b.hotScore - a.hotScore)
     .slice(0, 5);
   const trendingNumbers = new Set(top5ByHotScore.map((pr) => pr.number));
 
   // Update isTrending flag based on actual top 5 hot score
-  const prsWithTrending = allPRs.map((pr) => ({
+  const prsWithTrending = openPRs.map((pr) => ({
     ...pr,
     isTrending: trendingNumbers.has(pr.number),
   }));

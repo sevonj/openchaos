@@ -3,42 +3,62 @@
 import { useState, useEffect } from "react";
 
 const CLIPPY_ASCII_FRAMES = [
-  `  __
-  /  \\
-  |  |
-  @  @
-  |  |
-  || |
-  || |
-  |\\_|
-  \\__\\`,
-  `  __
-  /  \\
-  |  |
-  -  -
-  |  |
-  || |
-  || |
-  |\\_|
-  \\__\\`,
-  `  __
-  /  \\
-  |  |
-  @  @
-  |  |
-  || |
-  || |
-  |\\_|
-  \\__\\`,
-  `  __
-  /  \\
-  |  |
-  @  @
-  |  |
-  || |
-  || |
-  |\\_|
-  \\__\\`,
+`       _            
+     /▔ ▔\\         
+   ╭╴▏@ @▕╶╮       
+   ╰/  ╦  \\╯       
+    \\╲___╱/        
+    ╱╲▂▁▂╱╲        
+  ╱ /▔⊂_⊋▔\\ ╲      
+╱  ╱╰─⊂_⊋─╯╲  ╲    
+╲╱ \\  ©  // ╲╱    
+   /╲╲___╱╱\\       
+   \\  / \\  /       
+   ╱  ) (  ╲       
+  ╰──▔   ▔──╯      
+  `,
+`       _            
+     /▔ ▔\\         
+   ╭╴▏- -▕╶╮       
+   ╰/  ╦  \\╯       
+    \\╲___╱/        
+    ╱╲▂▁▂╱╲        
+  ╱ /▔⊂_⊋▔\\ ╲      
+╱  ╱╰─⊂_⊋─╯╲  ╲    
+╲╱ \\  ©  // ╲╱    
+   /╲╲___╱╱\\       
+   \\  / \\  /       
+   ╱  ) (  ╲       
+  ╰──▔   ▔──╯      
+  `,
+`       _            
+     /▔ ▔\\         
+   ╭╴▏@ @▕╶╮       
+   ╰/  ╦  \\╯       
+    \\╲___╱/        
+    ╱╲▂▁▂╱╲        
+  ╱ /▔⊂_⊋▔\\ ╲      
+╱  ╱╰─⊂_⊋─╯╲  ╲    
+╲╱ \\  ©  // ╲╱    
+   /╲╲___╱╱\\       
+   \\  / \\  /       
+   ╱  ) (  ╲       
+  ╰──▔   ▔──╯      
+  `,
+`       _            
+     /▔ ▔\\         
+   ╭╴▏@ @▕╶╮       
+   ╰/  ╦  \\╯       
+    \\╲___╱/        
+    ╱╲▂▁▂╱╲        
+  ╱ /▔⊂_⊋▔\\ ╲      
+╱  ╱╰─⊂_⊋─╯╲  ╲    
+╲╱ \\  ©  // ╲╱    
+   /╲╲___╱╱\\       
+   \\  / \\  /       
+   ╱  ) (  ╲       
+  ╰──▔   ▔──╯      
+  `,
 ];
 
 const CLIPPY_TIPS = [
@@ -106,7 +126,7 @@ function createSpeechBubble(text: string, maxWidth: number = 40): string {
   bubble += `│ ${buttonRowPadded} │\n`;
   bubble += `└${"─".repeat(width)}┘\n`;
   // Arrow on the right side - align to right edge of bubble
-  const arrowOffset = width - 2; // Position arrow near right edge
+  const arrowOffset = width - 10; // Position arrow near right edge
   bubble += `${" ".repeat(arrowOffset)}\\/\n`; // pointer pointing down on the right
 
   return bubble;
@@ -192,7 +212,7 @@ export function Clippy() {
         <div
           style={{
             position: "absolute",
-            bottom: "140px",
+            bottom: "220px",
             right: "0",
             fontFamily: "Courier New, monospace",
             fontSize: "12px",
